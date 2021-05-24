@@ -1,58 +1,52 @@
-
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Scanner;
 
 public class n5polinomios{
 
     public static void main(String[] args){
-        
-        System.out.println(args[0]);
-        /*int a[]= new int[1000];
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String  lines = br.readLine();    
-        
-        String[] strs = lines.trim().split("\\s+");
-            
-        for (int i = 0; i < strs.length; i++) {
-        a[i] = Integer.parseInt(strs[i]);
-        }
-        
-        int p  = a[0];
-        int n1 = a[1];
-        int n2 = a[2];
-        
+        Scanner sc = new Scanner(System.in);
+        int p = sc.nextInt();
         Polinomio p1 = new Polinomio(p);
         Polinomio p2 = new Polinomio(p);
-        
-        for(int i=3;i<n1*3+2;i+=3){
-            System.out.println("c1="+a[i]);
-        
-            Zp coef  = new Zp(a[i],p);
-            int expx = a[i+1];
-            System.out.println("expx1="+a[i+1]);
-            int expy = a[i+2];
-             System.out.println("expy1="+a[i+2]);
-            p1.inserta(coef, expx, expy);
-            
+        int n1 = sc.nextInt();
+        int n2 = sc.nextInt();
+        int c;
+        int expx;
+        int expy;
+       
+        for(int i=0;i<n1;i++){
+            c= sc.nextInt();
+            expx= sc.nextInt();
+            expy= sc.nextInt();
+            p1.inserta(new Zp(c,p), expx, expy);
         }
-        
-        for(int i= 3+n1*3;i<n2*3+3+n1*3;i+=3){
-            Zp coef  = new Zp(a[i],p);
-            int expx = a[i+1];
-            int expy = a[i+2];
-            p2.inserta(coef, expx, expy);
+        for(int i=0;i<n2;i++){
+            c= sc.nextInt();
+            expx= sc.nextInt();
+            expy= sc.nextInt();
+            p2.inserta(new Zp(c,p), expx, expy);
         }
+        System.out.print("Primer polinomio \n f=");
         p1.escribepolinomio();
+        System.out.print("Segundo polinomio\n g=");
         p2.escribepolinomio();
+        System.out.print("Suma\n f+g=");
         p1.suma(p2).escribepolinomio();
+        System.out.print("Resta\n f-g=");
         p1.resta(p2).escribepolinomio();
-        p1.producto(p2).escribepolinomio();*/
+        System.out.print("Producto\n f*g=");
+        p1.producto(p2).escribepolinomio();
+        if(p1.cociente(p2)!=null){
+            System.out.print("Cociente\n q=");
+           Polinomio q=p1.cociente(p2)[0];
+           q.escribepolinomio();
+            System.out.print("Resuido\n r=");
+            Polinomio r=p1.cociente(p2)[1];
+            r.escribepolinomio();
+        }else
+            System.out.println("No se puede resolver el cociente");
+            
     }
 }
-
 class Polinomio {
 
     private Monomio principal;
@@ -67,7 +61,23 @@ class Polinomio {
         principal = P;
         this.p = P.obtencoeficiente().obtenP();
     }
-
+   
+    public Polinomio copia(){
+        Polinomio ret = new Polinomio(this.p);
+        
+        Monomio aux = principal;
+        if(aux==null)
+            return ret;
+        while(aux!=null){
+            Zp coef  = aux.obtencoeficiente();
+            int expx = aux.obtenexponentex();
+            int expy = aux.obtenexponentey();
+            ret.inserta(coef, expx, expy);
+            aux=aux.obtensig();
+        }
+        return ret;
+    }
+    
     private Monomio obtenprincipal() {
         return principal;
     }
@@ -225,30 +235,52 @@ class Polinomio {
                 }
             return pol;
             }
-    /*
-    public POLINOMIO cociente(POLINOMIO divisor,POLINOMIO resuido)
+
+    public Polinomio[] cociente(Polinomio divisor)
         {
-        POLINOMIO cociente=new POLINOMIO();
-        if(principal.obtenexponente()<divisor.obtenprincipal().obtenexponente())
-            {
-            System.out.println("Fatal error gr(f)<gr(g)");
-            return cociente;
-            }
-        POLINOMIO aux=new POLINOMIO();
-             aux.principal=principal;
-        while(aux.obtenprincipal().obtenexponente()>=divisor.obtenprincipal().obtenexponente())
-            {
-            POLINOMIO caux=new POLINOMIO();
-            cociente.inserta(aux.obtenprincipal().obtencoeficiente().divide(divisor.obtenprincipal().obtencoeficiente()), aux.obtenprincipal().obtenexponente()-divisor.obtenprincipal().obtenexponente());
-            caux.inserta(aux.obtenprincipal().obtencoeficiente().divide(divisor.obtenprincipal().obtencoeficiente()), aux.obtenprincipal().obtenexponente()-divisor.obtenprincipal().obtenexponente());
-            System.out.println();
-            aux=aux.resta(caux.producto(divisor));
-            aux.escribepolinomio();
-            if(aux.obtenprincipal()==null)break;
-            }
-        resuido.principal=aux.principal;
-        return cociente;
-        }*/
+        if(this.obtenprincipal().grado()<divisor.obtenprincipal().grado())
+            return null;
+        if(this.variable()=='0' || divisor.variable()=='0' || this.variable()!=divisor.variable())
+            return null;
+        Polinomio q = new Polinomio(this.p);
+        Polinomio r = this.copia();   
+        while(r.obtenprincipal()!=null && r.obtenprincipal().grado() >= divisor.obtenprincipal().grado()){
+            int exp = r.obtenprincipal().grado() - divisor.obtenprincipal().grado();
+            Zp coef = r.obtenprincipal().obtencoeficiente().divide(divisor.obtenprincipal().obtencoeficiente());
+            q.inserta(coef, exp, 0);
+            Polinomio aux = new Polinomio(new Monomio(coef, exp, 0));
+            Polinomio aux2 = divisor.producto(aux);
+            r = r.resta(aux2);
+        }
+        Polinomio[] ret = new Polinomio[2];
+        ret[0]=q;
+        ret[1]=r;
+        return ret;
+        }
+    public char variable (){
+        Monomio aux = principal;
+        char ret='0'; //Si es cero tiene dos variables o ni una  
+        if(aux==null){
+            return '0';
+        }
+        
+        while(aux!=null){
+            if(aux.obtenexponentex()>0)
+                ret='x';
+            if(aux.obtenexponentey()>0 && ret=='x')
+                    return '0';
+            aux=aux.obtensig();
+        }
+        while(aux!=null){
+            if(aux.obtenexponentey()>0)
+                ret='y';
+            if(aux.obtenexponentex()>0 && ret=='y')
+                    return '0';
+            aux=aux.obtensig();
+        }
+        return ret;
+       
+    }
 }
 
 
@@ -295,8 +327,16 @@ class Zp {
     protected int p;
     
     public Zp(int z,int p){
-        this.p=p;
-        this.z=z%p;
+        if(z>=0){
+            this.p=p;
+            this.z=z%p;
+        }
+        else{
+            int aux = -z;
+            aux=aux%p;
+            this.z=(p-aux)%p;
+            this.p=p;
+        }
     }
         
     public int obtenZ(){
@@ -312,15 +352,24 @@ class Zp {
     }
     
     public Zp producto(Zp producto){
-        int ret=obtenZ()*producto.obtenZ();
+        int ret = obtenZ()*producto.obtenZ();
         return new Zp(ret,p);
+    }
+
+    public Zp divide(Zp dividendo){
+        int i;
+        for(i=0;i<p;i++)
+            if( (dividendo.obtenZ() * ((i%p) % p))%p == 1)
+                break;
+        Zp aux = new Zp(i,p);
+        
+        return this.producto(aux);
     }
     
     public boolean escero(){
                 return z==0;
             }
     public void escribeZp(){
-        if(z==1)return;
         System.out.print(z);
     }
     public Zp inverso(){
